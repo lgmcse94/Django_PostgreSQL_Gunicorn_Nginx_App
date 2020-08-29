@@ -1,0 +1,113 @@
+sudo apt-get update -y
+sudo apt-get install -y python3-venv
+mkdir countriesAPI
+cd countriesAPI
+python3 -m venv venv
+source venv/bin/activate
+pip install -U setuptools pip
+python -m pip install --upgrade pip
+pip install django
+python -m django --version
+pip install djangorestframework
+django-admin.py startproject worldCountries .
+python manage.py startapp countries
+
+
+*** settings.py ***
+
+INSTALLED_APPS = [
+    'rest_framework',
+    'countries.apps.CountriesConfig',
+    'corsheaders',
+]
+
+MIDDLEWARE = [
+    'corsheaders.CorsMiddleware',
+    ]
+
+
+https://www.enterprisedb.com/postgres-tutorials/how-install-postgres-ubuntu
+
+sudo -u postgres psql postgres
+# \password postgres
+
+pip install psycopg2
+https://springmerchant.com/bigcommerce/psycopg2-virtualenv-install-pg_config-executable-not-found/
+
+pip install django-cors-headers
+
+postgres=# create database countriesdb;
+postgres=# \l
+
+python manage.py  migrate
+python manage.py  makemigrations countries
+python manage.py migrate countries
+
+python manage.py runserver
+
+python manage.py  createsuperuser
+
+***create views***
+
+***register model with admin site***
+	from .models import Countries
+	admin.site.register(Countries)
+
+python manage.py runserver 8080
+http://localhost:8080/admin/
+linga/admin
+
+
+get: http://127.0.0.1:8000/api/countries or http://127.0.0.1:8000/api/countries/5
+post: http://127.0.0.1:8000/api/countries
+	{
+    "name" : "UK",
+    "capital" : "London"
+	}
+put: http://127.0.0.1:8000/api/countries/5
+	{
+    "name" : "UK1",
+    "capital" : "London1"
+	}
+delete: http://127.0.0.1:8000/api/countries/5
+***************Prod ready app**********
+pip install gunicorn
+gunicorn worldCountries.wsgi:application --bind 0.0.0.0:8001
+
+gunicorn worldCountries.wsgi:application --name 'django_app' --workers 3 --user='linga' --group='linga' --bind=unix:'venv/run/gunicorn.sock' --log-level=debug --log-file=-
+
+setup gunicorn_start.bash 
+
+https://jee-appy.blogspot.com/2017/01/deply-django-with-nginx.html
+and
+https://www.youtube.com/watch?v=JjwbXZwOst0
+
+./gunicorn_start.bash 
+
+
+sudo vim /etc/supervisor/conf.d/worldCountries.conf
+
+**insert below data***
+[program:worldCountries]
+command=/home/linga/projects/python/gunicorn_start.bash
+user=linga
+stdout_logfile = /home/linga/logs/gunicorn_supervisor.log
+redirect_stderr = true
+environment=LANG=en_US.UTF-8,LC_ALL=en_US.UTF-8
+
+*****
+
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl start worldCountries
+
+sudo systemctl restart supervisor
+sudo supervisorctl status worldCountries
+sudo supervisorctl restart worldCountries
+
+
+sudo ln -s /etc/nginx/sites-available/worldCountries.conf /etc/nginx/sites-enabled
+sudo supervisorctl restart worldCountries
+sudo service nginx start
+
+http://127.0.0.1/api/countries and http://127.0.0.1:8000/api/countries
